@@ -1,0 +1,97 @@
+@import url("https://fonts.googleapis.com/css2?family=Titillium+Web:wght@200;300;400;600;700;900&display=swap");
+@import "tailwindcss" theme(modern);
+
+@layer base {
+  :root {
+    /* Dark theme (default) */
+    --bg-dark: oklch(0.1 0 264);
+    --bg: oklch(0.2 0 264);
+    --bg-light: oklch(0.3 0 264);
+
+    --txt: hsl(0 0% 95%);
+    --txt-muted: hsl(0 0% 70%);
+    --h1-fill: black;
+    --h1-stroke: white;
+    --h1-stroke-width: 1px;
+
+    --border: hsl(0 0% 40%);
+    --nav-border: hsl(0 0% 95%);
+
+    --gradient: linear-gradient(0deg, var(--bg) 97%, var(--bg-light));
+    --gradient-hover: linear-gradient(
+      0deg,
+      var(--color-bg-button),
+      var(--bg-card)
+    );
+    --highlight: hsl(0 0% 30%);
+    --border-card: solid 1px var(--bg);
+    --shadow: 0px 2px 2px oklch(0 0 0 / 0.2), 0px 4px 4px oklch(0 0 0 / 0.1);
+
+    --shadow-s:
+      inset 0 1px 2px #ffffff30, 0 1px 2px #00000030, 0 2px 4px #00000015;
+    --shadow-m:
+      inset 0 1px 2px #ffffff50, 0 2px 4px #00000030, 0 4px 8px #00000015;
+    --shadow-l:
+      inset 0 1px 2px #ffffff70, 0 4px 6px #00000030, 0 6px 10px #00000015;
+
+    --primary: oklch(0.9 0.17 100);
+    --nav-bg-dark: hsl(0 0% 95%);
+    --nav-bg: oklch(0.1 0 264);
+    --nav-bg-light: oklch(0.3 0 264);
+
+    --shadow-nav-active:
+      0 8px 40px oklch(0 0 0 / 0.45), 0 2px 8px oklch(0 0 0 / 0.3);
+
+    --shadow-nav-inactive: 0 2px 16px oklch(0 0 0 / 0.25);
+
+    --nav-text: oklch(0.1 0 264);
+    --nav-text-muted: oklch(0.6 0 264);
+
+    --font-sans: "Titillium Web", sans-serif;
+  }
+
+  :root.light {
+    --bg-dark: oklch(0.96%, 0, 0);
+    --bg: oklch(0.96 0 264);
+    --bg-light: oklch(0.92 0 264);
+
+    --txt: hsl(0 0% 10%);
+    --txt-muted: hsl(0 0% 30%);
+    --h1-fill: oklch(1 0 264);
+    --h1-stroke: black;
+    --h1-stroke-width: 1px;
+
+    --border: hsl(0 0% 30%);
+    --nav-border: hsl(0 0% 10%);
+    --gradient: linear-gradient(0deg, var(--bg) 97%, var(--bg-light));
+    --gradient-hover: linear-gradient(0deg, var(--bg), var(--bg-light));
+
+    --highlight: hsl(0 0% 100%);
+    --border-card: solid 1px var(--bg);
+
+    --primary: oklch(0.65 0.15 264);
+    --nav-bg-dark: oklch(0.1 0 264);
+    --nav-bg: oklch(0.96 0 264);
+    --nav-bg-light: oklch(0.1 0 264);
+
+    --nav-text: oklch(0.96 0 264);
+    --nav-text-muted: oklch(0.4 0 264);
+  }
+
+  body {
+    background-color: var(--bg-dark);
+    color: var(--txt);
+    font-family: var(--font-sans);
+  }
+}
+
+/* Stroke styles for the reveal title  */
+.outlined-stroke {
+  color: transparent;
+  -webkit-text-stroke: var(--h1-stroke-width) var(--h1-stroke);
+}
+
+.outlined-fill {
+  color: var(--h1-stroke);
+  -webkit-text-stroke: var(--h1-stroke-width) var(--h1-stroke);
+}
