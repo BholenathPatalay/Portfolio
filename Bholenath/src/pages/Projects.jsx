@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import StrokeRevealTitle from "../components/StrokeRevealTitle";
-import ProjectCard from "../components/projectCard";
+import ProjectCard from "../components/ProjectCard";
 
 const projects = [
   {
