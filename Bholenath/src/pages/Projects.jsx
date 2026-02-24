@@ -19,7 +19,7 @@ const projects = [
     client: "Ai Recipe Generator",
     title: "Chef_Claude",
     live: "https://chef-claude-8zk2.vercel.app/",
-    images: ["/public/chefclaude2.jpg", "/chefclaude3.jpg", "/chefclaude.jpg"],
+    images: ["/chefclaude2.jpg", "/chefclaude3.jpg", "/chefclaude.jpg"],
   },
 ];
 
@@ -43,7 +43,6 @@ const Projects = () => {
         </StrokeRevealTitle>
       </div>
 
-      {/* Mobile: horizontal swipe (visible only on small screens) */}
       <div className="md:hidden">
         <div className="flex gap-6 px-4 pb-4 -mx-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
           {projects.map((project, i) => (
@@ -61,7 +60,6 @@ const Projects = () => {
         </div>
       </div>
 
-      {/* Desktop: sticky stack with scroll animations */}
       <div className="relative hidden max-w-6xl mx-auto mt-8 md:block lg:mt-12">
         <div className="grid grid-cols-1 gap-16 lg:gap-24">
           {projects.map((project, i) => (
@@ -73,7 +71,7 @@ const Projects = () => {
               viewport={{ once: true, amount: 0.2 }}
               className="sticky"
               style={{
-                top: `${120 + i * 40}px`, // progressive sticky offset
+                top: `${120 + i * 40}px`,
               }}
             >
               <ProjectCard index={i + 1} {...project} />
