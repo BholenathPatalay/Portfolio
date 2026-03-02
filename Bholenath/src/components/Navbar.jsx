@@ -11,28 +11,29 @@ const NAV_ITEMS = [
   { id: "contact", label: "Contact" },
 ];
 
-/* hamburger */
 function Hamburger({ open, toggle }) {
+  const lineClass =
+    "absolute left-1/2 top-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 bg-(--txt)";
   return (
     <motion.button
-      onClick={toggle}
+      onClick={(e) => {
+        e.stopPropagation();
+        toggle();
+      }}
       whileTap={{ scale: 0.9 }}
       className="relative flex items-center justify-center h-9 w-9 md:hidden"
     >
-      {/* top line */}
       <motion.div
         animate={open ? { rotate: 45, y: 6 } : { rotate: 0, y: -6 }}
-        className="absolute left-1/2 top-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 bg-(--txt)"
+        className={lineClass}
       />
-      {/* middle line */}
       <motion.div
         animate={open ? { opacity: 0 } : { opacity: 1 }}
-        className="absolute left-1/2 top-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 bg-(--txt)"
+        className={lineClass}
       />
-      {/* bottom line */}
       <motion.div
         animate={open ? { rotate: -45, y: -6 } : { rotate: 0, y: 6 }}
-        className="absolute left-1/2 top-1/2 h-0.5 w-5 -translate-x-1/2 -translate-y-1/2 bg-(--txt)"
+        className={lineClass}
       />
     </motion.button>
   );
@@ -42,180 +43,170 @@ export default function Navbar() {
   const [active, setActive] = useState("home");
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const isManualScrolling = useRef(false);
 
-  const navRef = useRef();
-
-  /* scroll shadow */
+  // 1. Scroll Shadow
   useEffect(() => {
-    const handle = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handle);
-    return () => window.removeEventListener("scroll", handle);
-  }, []);
-
-  /* scroll spy */
-  useEffect(() => {
-    const handleScroll = () => {
-      const middleOfScreen = window.scrollY + window.innerHeight / 2;
-
-      for (let i = 0; i < NAV_ITEMS.length; i++) {
-        const section = document.getElementById(NAV_ITEMS[i].id);
-        if (!section) continue;
-
-        const top = section.offsetTop;
-        const bottom = top + section.offsetHeight;
-
-        if (middleOfScreen >= top && middleOfScreen < bottom) {
-          setActive(NAV_ITEMS[i].id);
-          break;
-        }
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    handleScroll(); // run once on mount
-
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* smooth scroll */
-  const select = (id) => {
+  // 2. Optimized Intersection Observer (Scroll Spy)
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: "-45% 0px -45% 0px", // Triggers when the section is near the middle
+      threshold: 0,
+    };
+
+    const observerCallback = (entries) => {
+      if (isManualScrolling.current) return;
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActive(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(
+      observerCallback,
+      observerOptions,
+    );
+    NAV_ITEMS.forEach((item) => {
+      const el = document.getElementById(item.id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // 3. Robust Handle Select
+  const handleSelect = (id) => {
     setActive(id);
     setOpen(false);
+    isManualScrolling.current = true;
 
-    document.getElementById(id)?.scrollIntoView({
-      behavior: "smooth",
-    });
+    // Use a tiny timeout to allow the mobile menu state to start closing
+    setTimeout(() => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
+      // Re-enable scroll spy after scroll finishes
+      setTimeout(() => {
+        isManualScrolling.current = false;
+      }, 1000);
+    }, 10);
   };
 
   return (
-    <div className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 py-4">
+    <div className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 py-4 pointer-events-none">
       <motion.nav
-        ref={navRef}
-        initial={{ y: -40, opacity: 0, scale: 0.96 }}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
         className={`
-        relative
-        w-full max-w-4xl
-        rounded-2xl
-        border border-white/10
-        backdrop-blur-xl
-        bg-white/5
-        shadow-lg
-        transition-all duration-500
-
-        ${scrolled ? "shadow-[0_20px_60px_rgba(0,0,0,0.45)] bg-white/10" : ""}
+          relative pointer-events-auto w-full max-w-4xl rounded-2xl border border-white/10 
+          backdrop-blur-xl bg-white/5 transition-all duration-300
+        
+          ${
+            scrolled
+              ? "bg-white/10 shadow-xl shadow-black/20"
+              : "bg-white/5 shadow-sm"
+          }
         `}
       >
-        {/* subtle bottom glow line */}
         <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
 
         <div className="flex items-center px-5 py-3">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-3 cursor-pointer"
+          {/* Logo */}
+          <div
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => handleSelect("home")}
           >
-            <div
-              className="flex items-center justify-center w-8 h-8 font-black text-black shadow-lg  rounded-xl bg-linear-to-br from-yellow-300 to-yellow-500"
-            >
+            <div className="flex items-center justify-center w-8 h-8 font-black text-black transition-transform shadow-lg rounded-xl bg-linear-to-br from-yellow-300 to-yellow-500 group-hover:scale-110">
               BP
             </div>
-
             <span className="font-bold tracking-wide">Bholenath</span>
-          </motion.div>
+          </div>
 
-          {/* desktop navigation */}
-          <LayoutGroup>
-            <div className="justify-center flex-1 hidden gap-2 md:flex">
-              {NAV_ITEMS.map((item) => {
-                const isActive = active === item.id;
-
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => select(item.id)}
-                    className="relative px-4 py-2 text-sm font-semibold rounded-full group"
+          {/* Desktop Nav */}
+          <div className="justify-center flex-1 hidden gap-1 md:flex">
+            <LayoutGroup id="desktop-nav">
+              {NAV_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleSelect(item.id)}
+                  className="relative px-4 py-2 text-sm font-semibold rounded-full"
+                >
+                  {active === item.id && (
+                    <motion.span
+                      layoutId="pill"
+                      className="absolute inset-0 rounded-full bg-(--nav-bg-dark) shadow-md"
+                      transition={{
+                        type: "spring",
+                        bounce: 0.2,
+                        duration: 0.6,
+                      }}
+                    />
+                  )}
+                  <span
+                    className={`relative z-10 transition-colors ${active === item.id ? "text-(--nav-text)" : "text-(--txt) opacity-60 hover:opacity-100"}`}
                   >
-                    {/* active pill */}
-                    {isActive && (
-                      <motion.span
-                        layoutId="pill"
-                        transition={{
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 25,
-                          mass: 0.8,
-                        }}
-                        className="
-                      absolute inset-0
-                      rounded-full
-                      bg-(--nav-bg-dark)
-                      text-(--nav-text)
-                      shadow-lg
-                      "
-                      />
-                    )}
+                    {item.label}
+                  </span>
+                </button>
+              ))}
+            </LayoutGroup>
+          </div>
 
-                    <span
-                      className={`relative z-10 ${
-                        isActive ? "text-(--nav-text)" : "text-(--txt)"
-                      }`}
-                    >
-                      {item.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </LayoutGroup>
-
-          {/* right side: theme toggle + hamburger */}
+          {/* Right Actions */}
           <div className="flex items-center gap-2 ml-auto">
             <ThemeToggle />
             <Hamburger open={open} toggle={() => setOpen(!open)} />
           </div>
         </div>
 
-        {/* mobile menu */}
+        {/* Mobile Menu */}
         <AnimatePresence>
           {open && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="relative overflow-hidden md:hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="overflow-hidden md:hidden"
             >
               <div className="px-4 pb-4 space-y-1">
-                {/* Wrap mobile items with LayoutGroup to animate the pill */}
-                <LayoutGroup>
-                  {NAV_ITEMS.map((item, i) => {
-                    const isActive = active === item.id;
-                    return (
-                      <motion.button
-                        key={item.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        transition={{ delay: i * 0.05 }}
-                        onClick={() => select(item.id)}
-                        className="relative block w-full px-2 py-3 text-left rounded-lg"
+                <LayoutGroup id="mobile-nav">
+                  {NAV_ITEMS.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSelect(item.id)}
+                      className="relative block w-full px-4 py-3 text-left rounded-lg transition-active"
+                    >
+                      {active === item.id && (
+                        <motion.div
+                          layoutId="mobile-pill"
+                          className="absolute inset-0 rounded-lg bg-(--nav-bg-dark) shadow-sm"
+                          transition={{
+                            type: "spring",
+                            bounce: 0.2,
+                            duration: 0.6,
+                          }}
+                        />
+                      )}
+                      <span
+                        className={`relative z-10 ${active === item.id ? "text-(--nav-text) font-bold" : "text-(--txt) opacity-80"}`}
                       >
-                        {isActive && (
-                          <motion.div
-                            layoutId="mobile-pill"
-                            className="absolute inset-0 rounded-lg bg-(--nav-bg-dark) shadow-lg"
-                          />
-                        )}
-                        <span
-                          className={`relative z-10 ${
-                            isActive ? "text-(--nav-text)" : "text-(--txt)"
-                          }`}
-                        >
-                          {item.label}
-                        </span>
-                      </motion.button>
-                    );
-                  })}
+                        {item.label}
+                      </span>
+                    </button>
+                  ))}
                 </LayoutGroup>
               </div>
             </motion.div>
